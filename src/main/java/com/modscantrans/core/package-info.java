@@ -17,5 +17,15 @@
  * </ol>
  *
  * <p>词条全局优先级:CFPA 社区人工汉化(最高) &gt; AI 本地缓存翻译 &gt; 实时 AI 机翻(兜底)。
+ *
+ * <p>本顶层包另承载跨模块共享的基础类型(加载器无关):
+ * <ul>
+ *   <li>{@link com.modscantrans.core.TargetLanguage} —— 目标翻译语言(用户手动选择,不读 IP);</li>
+ *   <li>{@link com.modscantrans.core.EntrySource} —— 词条来源与全局优先级;</li>
+ *   <li>{@link com.modscantrans.core.ModInfo} —— 扫描到的模组信息;</li>
+ *   <li>{@link com.modscantrans.core.TranslationEntry} —— 翻译词条(绑定目标语言);</li>
+ *   <li>{@link com.modscantrans.core.ModFamily} —— 模组家族定义(modID 匹配,含跨家族互联);</li>
+ *   <li>{@link com.modscantrans.core.TransLibConfig} —— 运行配置(纯数据,不含 toml 读写)。</li>
+ * </ul>
  */
 package com.modscantrans.core;
