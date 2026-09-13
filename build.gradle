@@ -1,0 +1,162 @@
+// 模组扫描翻译支持库 (Mod Scan Translation Support Library) - NeoForge 1.21.1 构建脚本
+// 基于官方 NeoForge MDK (ModDevGradle) 模板,按本项目结构调整。
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.146'
+    id 'idea'
+}
+tasks.named('wrapper', Wrapper).configure {
+    // 在这里定义 wrapper 的值,这样更新 gradle-wrapper.properties 时无需每次手动指定。
+    // 将其改为 Wrapper.DistributionType.ALL 会下载完整的 gradle 源码(带文档,鼠标悬停可见),
+    // 但 Gradle 体积会变大。若改为 ALL,请之后运行两次 Gradle wrapper 任务。
+    // (检查 gradle/wrapper/gradle-wrapper.properties 中 distributionUrl 是否指向 -all 来验证)
+    distributionType = Wrapper.DistributionType.BIN
+}
+version = mod_version
+group = mod_group_id
+sourceSets.main.resources {
+    // 包含数据生成器生成的资源
+    srcDir('src/generated/resources')
+    // 从最终输出中排除仅用于开发的资源
+    exclude("**/*.bbmodels") // BlockBench 项目文件
+    exclude("src/generated/**/.cache") // 数据生成缓存文件
+}
+repositories {
+    // 如下方某些依赖需要,可在此添加额外的仓库
+}
+base {
+    archivesName = mod_id
+}
+// Mojang 在 1.21 中向终端用户分发 Java 21,因此模组应面向 Java 21。
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+neoForge {
+    // 指定要使用的 NeoForge 版本。
+    version = project.neo_version
+    parchment {
+        mappingsVersion = project.parchment_mappings_version
+        minecraftVersion = project.parchment_minecraft_version
+    }
+    // 该行可选。访问转换器会被自动检测
+    // accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
+    // 默认运行配置。
+    // 这些配置可以按需调整、删除或复制。
+    runs {
+        client {
+            client()
+            // 逗号分隔的命名空间列表,用于加载游戏测试。空 = 所有命名空间。
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+        // 该运行配置启动 GameTestServer 并运行所有已注册的游戏测试,然后退出。
+        // 默认情况下,若没有提供游戏测试,服务器会崩溃。
+        // 游戏测试系统也默认为其它运行配置启用,可通过 /test 命令使用。
+        gameTestServer {
+            type = "gameTestServer"
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+        data {
+            data()
+            // 下面是覆盖上方 configureEach 中设置的工作目录的示例,如需启用请取消注释
+            // gameDirectory = project.file('run-data')
+            // 指定数据生成的 modid、输出目录,以及查找已有资源的目录。
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+        // 应用于上方所有运行配置
+        configureEach {
+            // userdev 环境推荐的日志数据
+            // 标记可按需增删,以逗号分隔。
+            // "SCAN": 用于模组扫描。
+            // "REGISTRIES": 用于触发注册表事件。
+            // "REGISTRYDUMP": 用于获取所有注册表的内容。
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            // 控制台推荐的日志级别
+            // 这里可设置各种级别。
+            // 请阅读: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+    }
+    mods {
+        // 定义 模组 <-> 源码 绑定
+        // 用于告诉游戏哪些源码属于哪个模组
+        // 多模组项目应为每个模组定义一个
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+// 建立一个名为 'localRuntime' 的依赖配置。
+// 该配置应替代 'runtimeOnly' 使用,用于声明仅在运行时测试中存在、但
+// 是"可选"的依赖,意味着不会被本模组的依赖者拉取。
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+dependencies {
+    // 以 JEI 为例的可选模组依赖
+    // JEI 的 API 在编译期声明,完整的 JEI 构件在运行时使用
+    // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
+    // compileOnly "mezz.jei:jei-${mc_version}-neoforge-api:${jei_version}"
+    // 我们把完整版本加入 localRuntime 而非 runtimeOnly,这样不会发布对它的依赖
+    // localRuntime "mezz.jei:jei-${mc_version}-neoforge:${jei_version}"
+    // 以 ./libs 中的模组 jar 通过 flat dir 仓库作为依赖的示例
+    // 映射到 ./libs/coolmod-${mc_version}-${coolmod_version}.jar
+    // 搜索时忽略 group id —— 此处为 "blank"
+    // implementation "blank:coolmod-${mc_version}:${coolmod_version}"
+    // 以文件作为依赖的示例
+    // implementation files("libs/coolmod-${mc_version}-${coolmod_version}.jar")
+    // 以姊妹或子项目作为依赖的示例:
+    // implementation project(":myproject")
+    // 更多信息:
+    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
+    // http://www.gradle.org/docs/current/userguide/dependency_management.html
+}
+// 该代码块在指定的资源目标中展开所有已声明的替换属性。
+// 缺失属性会报错。属性使用 ${} Groovy 记法展开。
+var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from "src/main/templates"
+    into "build/generated/sources/modMetadata"
+}
+// 将 "generateModMetadata" 的输出作为构建的输入目录
+// 这在通过 Gradle 和 IDE 构建时都有效。
+sourceSets.main.resources.srcDir generateModMetadata
+// 为避免每次都要手动运行 "generateModMetadata",让它在每次项目刷新时运行
+neoForge.ideSyncTask generateModMetadata
+// 允许使用 maven-publish 插件发布的示例配置
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url = "file://${project.projectDir}/repo"
+        }
+    }
+}
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8' // 使用 UTF-8 字符集进行 Java 编译
+}
+// IDEA 不再自动下载依赖的 sources/javadoc jar,因此需要显式启用该行为。
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}

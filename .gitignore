@@ -1,0 +1,47 @@
+# Gradle
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/**/build/
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/**/out/
+.run/
+
+# Eclipse
+.apt_generated
+.classpath
+.eclipse/
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/**/bin/
+
+# VS Code
+.vscode/
+
+# Mac OS
+.DS_Store
+
+# Minecraft Modding
+run/
+!**/src/**/run/
+**/src/generated/**/.cache/
+repo/
+!**/src/**/repo/
+
+# 日志与临时文件
+*.log
+logs/
+
+# 本模组运行期翻译缓存(游戏运行目录下,已被 run/ 覆盖;此处再兜底)
+modscantrans_cache/
+cache/

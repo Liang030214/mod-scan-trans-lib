@@ -1,0 +1,96 @@
+# 这是 neoforge.mods.toml 文件示例。它包含与加载模组相关的数据。
+# 有若干必填字段(#mandatory),以及更多可选字段(#optional)。
+# 整体格式是标准 TOML 格式 v0.5.0。
+# 注意本文件中有几个 TOML 列表。
+# 关于 toml 格式的更多信息见: https://github.com/toml-lang/toml
+
+# 要加载的模组加载器类型 —— 对于常规 FML @Mod 模组应为 javafml
+modLoader="javafml" #mandatory
+
+# 该模组加载器要匹配的版本范围 —— 对于常规 FML @Mod 即 FML 版本。
+loaderVersion="${loader_version_range}" #mandatory
+
+# 你的模组协议。这是必填元数据,便于他人理解你的分发属性。
+# 在 https://choosealicense.com/ 查看选项。All Rights Reserved 是默认版权立场,故此处为默认。
+license="${mod_license}"
+
+# 当本模组出现问题时,引导用户前往的 URL
+issueTrackerURL="https://github.com/mod-scan-trans-lib/mod-scan-trans-lib/issues" #optional
+
+# 一个 mod 列表 —— 此处允许多少个由具体模组加载器决定
+[[mods]] #mandatory
+
+# 模组的 modid
+modId="${mod_id}" #mandatory
+
+# 模组版本号
+version="${mod_version}" #mandatory
+
+# 模组显示名
+displayName="${mod_name}" #mandatory
+
+# 用于查询本模组更新的 URL。见 JSON 更新规范 https://docs.neoforged.net/docs/misc/updatechecker/
+#updateJSONURL="https://change.me.example.invalid/updates.json" #optional
+
+# 模组“主页”URL,显示在模组界面
+displayURL="https://github.com/mod-scan-trans-lib/mod-scan-trans-lib" #optional
+
+# 模组 JAR 根目录下用于显示 logo 的文件名
+#logoFile="mod_scan_trans_lib.png" #optional
+
+# 模组界面中显示的文本字段
+#credits="" #optional
+
+# 模组作者,显示在模组界面(可选)
+authors="Mod Scan Trans Lib Team"
+
+# 模组的描述文本(多行!)(#mandatory)
+description='''
+Mod Scan Translation Support Library —— Minecraft NeoForge 底层翻译支持库。
+异步扫描 mods 文件夹 Jar 提取语言文本;联网拉取 CFPA 社区人工汉化;
+AI 翻译本地缓存 + 实时机翻兜底;按 modID 识别模组家族术语库与旁系参考库;
+目标语言完全由用户手动选择,不读取 IP、不按地理位置自动切换语种。
+'''
+
+# [[mixins]] 块允许你向 FML 声明你的 mixin 配置,使其被加载。
+#[[mixins]]
+#config="${mod_id}.mixins.json"
+
+# [[accessTransformers]] 块允许你声明 AT 文件位置。
+# 若省略该块,会尝试从 META-INF/accesstransformer.cfg 回退加载 AT。
+#[[accessTransformers]]
+#file="META-INF/accesstransformer.cfg"
+
+# 依赖 —— 使用 . 表示对特定 modid 的依赖。依赖是可选的。
+[[dependencies.${mod_id}]] #optional
+    # 依赖的 modid
+    modId="neoforge" #mandatory
+    # 依赖类型。可为 "required"、"optional"、"incompatible" 或 "discouraged"(大小写不敏感)。
+    # 'required' 要求该模组存在,'optional' 不要求
+    # 'incompatible' 会在该模组存在时阻止游戏加载,'discouraged' 会显示警告
+    type="required" #mandatory
+    # 可选字段,描述为何需要该依赖或为何不兼容
+    # reason="..."
+    # 依赖的版本范围
+    versionRange="[${neo_version},)" #mandatory
+    # 依赖的排序关系。
+    # BEFORE - 本模组在该依赖之前加载
+    # AFTER  - 本模组在该依赖之后加载
+    ordering="NONE"
+    # 该依赖作用的端 —— BOTH、CLIENT 或 SERVER
+    side="BOTH"
+
+# 这里是另一个依赖
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    type="required"
+    # 该版本范围声明最低为当前 minecraft 版本,最高不到下一个大版本
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+# features 是游戏环境的特定属性,你可能希望声明你需要的。本例声明
+# 你的模组需要 GL 版本 3.2 或更高。还会加入其它 features。它们是端感知的,
+# 因此声明此条不会(例如)阻止你的模组在服务端加载。
+#[features.${mod_id}]
+#openGLVersion="[3.2,)"
