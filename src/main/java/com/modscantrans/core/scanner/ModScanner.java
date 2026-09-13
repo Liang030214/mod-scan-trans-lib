@@ -1,5 +1,6 @@
 package com.modscantrans.core.scanner;
 
+import com.modscantrans.core.LangJson;
 import com.modscantrans.core.ModInfo;
 import com.modscantrans.core.TransLibLogger;
 import java.io.IOException;

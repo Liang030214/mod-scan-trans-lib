@@ -1,4 +1,4 @@
-package com.modscantrans.core.scanner;
+package com.modscantrans.core;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -7,15 +7,15 @@ import java.util.Map;
  * 极简 JSON 解析/序列化工具(零外部依赖)。
  *
  * <p>专为读取 Minecraft 语言文件({@code assets/<modid>/lang/<lang>.json})与
- * {@code fabric.mod.json} 顶层字符串字段而设计:<b>只解析「对象 → 字符串键 → 字符串值」</b>。
- * 非字符串值(数字 / 布尔 / null)与嵌套对象 / 数组会被<b>跳过</b>而不保留,
- * 这对语言文件足够(其值均为字符串),也能安全地放过 {@code fabric.mod.json}
- * 中 {@code depends} 这类嵌套结构而不报错。
+ * CFPA 人工汉化({@code zh_cn.json})等「对象 → 字符串键 → 字符串值」结构设计。
+ * <b>只解析并保留字符串键值对</b>:非字符串值(数字 / 布尔 / null)与嵌套对象 / 数组会被
+ * <b>跳过</b>而不保留——这对语言文件足够(其值均为字符串),也能安全放过
+ * {@code fabric.mod.json} 中 {@code depends} 这类嵌套结构而不报错。
  *
  * <p>选择自写而不用 Gson,是为了让 core 层真正零外部依赖、加载器无关,
- * NeoForge / Forge / Fabric 均可直接复用。
+ * NeoForge / Forge / Fabric 均可直接复用。scanner 与 cfpa 等模块共享本工具。
  */
-final class LangJson {
+public final class LangJson {
     private LangJson() {
     }
 
@@ -26,7 +26,7 @@ final class LangJson {
      * @return 保留下来的字符串键值对(保留插入顺序)
      * @throws IllegalArgumentException 文本不是合法对象结构时
      */
-    static Map<String, String> parseObject(String json) {
+    public static Map<String, String> parseObject(String json) {
         Parser p = new Parser(json);
         return p.parseObject();
     }
@@ -37,7 +37,7 @@ final class LangJson {
      * @param map 映射
      * @return JSON 文本
      */
-    static String toJson(Map<String, String> map) {
+    public static String toJson(Map<String, String> map) {
         StringBuilder sb = new StringBuilder(map.size() * 16 + 2);
         sb.append('{');
         boolean first = true;
