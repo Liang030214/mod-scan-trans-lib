@@ -43,5 +43,6 @@ repo/
 logs/
 
 # 本模组运行期翻译缓存(游戏运行目录下,已被 run/ 覆盖;此处再兜底)
+# 注意:只忽略根目录的 cache/,不要忽略 core/cache 源码包(用 /cache/ 锚定根)
 modscantrans_cache/
-cache/
+/cache/
