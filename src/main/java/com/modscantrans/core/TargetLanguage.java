@@ -30,6 +30,9 @@ public final class TargetLanguage implements Comparable<TargetLanguage> {
     /** 默认目标语言:简体中文。 */
     public static final TargetLanguage DEFAULT = ZH_CN;
 
+    /** 所有内置可选语言(GUI 下拉框用,顺序固定:简中→英文→葡语→泰语)。 */
+    public static java.util.List<TargetLanguage> BUILTINS = java.util.List.of(ZH_CN, EN_US, PT_PT, TH_TH);
+
     private final String code;
     private final String displayName;
 
