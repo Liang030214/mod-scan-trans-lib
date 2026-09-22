@@ -2,11 +2,28 @@ package com.modscantrans.neoforge;
 
 import com.modscantrans.core.TransLibConfig;
 import com.modscantrans.core.TransLibLogger;
+import com.modscantrans.core.ai.AiService;
+import com.modscantrans.core.ai.NoopAiTranslator;
+import com.modscantrans.core.cache.TranslationCache;
+import com.modscantrans.core.cfpa.CfpaService;
+import com.modscantrans.core.cfpa.HttpCfpaClient;
+import com.modscantrans.core.family.FamilyResolver;
+import com.modscantrans.core.family.GlossaryStore;
+import com.modscantrans.core.i18n.TranslationService;
+import com.modscantrans.core.scanner.ModScanner;
+import com.modscantrans.neoforge.client.ClientEventHandler;
 import com.modscantrans.neoforge.config.ModScanTransConfig;
+import com.modscantrans.neoforge.event.TranslationInjector;
+import com.modscantrans.neoforge.gui.ModScanTransConfigScreen;
+import java.nio.file.Path;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +60,14 @@ public class ModScanTransLib {
     /** NeoForge 配置定义(toml 读写)。 */
     private final ModScanTransConfig modConfig;
 
+    // —— core 层各服务(commonSetup 中初始化)——
+    private ModScanner scanner;
+    private CfpaService cfpaService;
+    private GlossaryStore glossaryStore;
+    private TranslationCache translationCache;
+    private AiService aiService;
+    private TranslationService translationService;
+
     /** 单例(供事件层 / GUI 层取用 core 各服务)。 */
     private static volatile ModScanTransLib INSTANCE;
 
@@ -58,6 +83,19 @@ public class ModScanTransLib {
 
         modEventBus.addListener(this::commonSetup);
         LOGGER.info("[{}] 模组扫描翻译支持库 (NeoForge) 开始加载。", MODID);
+
+        // —— 客户端注册(仅客户端)——
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            // 快捷键 + 客户端 tick 监听
+            ClientEventHandler.registerSelf(modEventBus);
+            // 模组列表 "Config" 按钮集成:IConfigScreenFactory 是 NeoForge 1.21.1 的函数式接口,
+            // 唯一方法 createScreen(Minecraft mc, Screen parent) -> Screen;
+            // 直接传 lambda(官方文档用法:registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new))
+            modContainer.registerExtensionPoint(
+                    IConfigScreenFactory.class,
+                    (mc, parent) -> new ModScanTransConfigScreen(parent));
+            LOGGER.info("[{}] 客户端 GUI + 快捷键已注册", MODID);
+        }
     }
 
     /**
@@ -74,9 +112,32 @@ public class ModScanTransLib {
                 config.isFamilyGlossaryEnabled(), config.isAsyncScanEnabled(),
                 config.getTargetLanguage().code());
 
-        // 阶段3 后续(事件层 + GUI 层)在此挂接 core 服务
-        // 事件层:订阅语言加载事件,调用 TranslationService 注入合并翻译到 I18n
-        // GUI 层:注册独立设置界面,修改参数自动写回 toml
+        // —— 初始化 core 各服务 ——
+        Path configDir = FMLPaths.CONFIGDIR.get().resolve(MODID);
+        Path cfpaCache = configDir.resolve("cfpa_index.cache");
+        Path aiCache = configDir.resolve("ai_translations.cache");
+
+        this.scanner = new ModScanner();
+        this.cfpaService = new CfpaService(new HttpCfpaClient(logger), logger, cfpaCache);
+        FamilyResolver familyResolver = FamilyResolver.withBuiltins();
+        this.glossaryStore = new GlossaryStore(familyResolver, config);
+        this.translationCache = new TranslationCache(aiCache, logger);
+
+        // AI 翻译:暂用 NoopAiTranslator(实时 AI 由后续阶段接入,当前只用缓存)
+        this.aiService = new AiService(NoopAiTranslator.INSTANCE, translationCache, config, logger);
+        this.translationService = new TranslationService(config, cfpaService, glossaryStore, aiService, logger);
+
+        // 启动时清理缓存(若配置开启)
+        if (modConfig.clearCacheOnBoot()) {
+            translationCache.clear();
+            translationCache.flush();
+            LOGGER.info("[{}] 启动时清理 AI 翻译缓存(clearCacheOnBoot=true)", MODID);
+        }
+
+        LOGGER.info("[{}] core 服务初始化完成: scanner/cfpa/family/ai/cache/i18n 就绪", MODID);
+
+        // —— 注册事件层:翻译注入 ——
+        TranslationInjector.register();
     }
 
     /** @return core 运行配置(GUI / 事件层取用) */
@@ -92,6 +153,21 @@ public class ModScanTransLib {
     /** @return NeoForge 配置定义(GUI 修改后写回 toml 用) */
     public ModScanTransConfig modConfig() {
         return modConfig;
+    }
+
+    /** @return 模组扫描器 */
+    public ModScanner scanner() {
+        return scanner;
+    }
+
+    /** @return 顶层翻译服务(事件层调用) */
+    public TranslationService translationService() {
+        return translationService;
+    }
+
+    /** @return AI 翻译缓存(GUI 一键清理用) */
+    public TranslationCache translationCache() {
+        return translationCache;
     }
 
     /** @return 当前模组实例(事件层 / GUI 层用) */

@@ -1,4 +1,18 @@
 {
   "mod_scan_trans_lib.name": "Mod Scan Translation Support Library",
-  "mod_scan_trans_lib.tagline": "Async mod jar scanning, CFPA community translations, AI translation cache, and mod family terminology libraries."
+  "mod_scan_trans_lib.tagline": "Async mod jar scanning, CFPA community translations, AI translation cache, and mod family terminology libraries.",
+  "key.categories.mod_scan_trans_lib": "Mod Scan Trans Lib",
+  "key.mod_scan_trans_lib.open_config": "Open Settings",
+  "mod_scan_trans_lib.config.title": "Mod Scan Trans Lib - Settings",
+  "mod_scan_trans_lib.config.enabled": "Mod Enabled",
+  "mod_scan_trans_lib.config.cfpa": "CFPA Community Translations",
+  "mod_scan_trans_lib.config.ai": "AI Translation",
+  "mod_scan_trans_lib.config.family": "Family Glossary",
+  "mod_scan_trans_lib.config.async": "Async Scanning",
+  "mod_scan_trans_lib.config.clearcache": "Clear Cache on Boot",
+  "mod_scan_trans_lib.config.language": "Target Language",
+  "mod_scan_trans_lib.config.save_reload": "Save & Reload",
+  "mod_scan_trans_lib.config.clear_ai_cache": "Clear AI Cache Now",
+  "mod_scan_trans_lib.config.cancel": "Cancel",
+  "mod_scan_trans_lib.config.reloading": "Reloading translations..."
 }

@@ -1,4 +1,18 @@
 {
   "mod_scan_trans_lib.name": "模组扫描翻译支持库",
-  "mod_scan_trans_lib.tagline": "异步扫描模组Jar、CFPA社区人工汉化、AI翻译本地缓存、模组家族术语库。"
+  "mod_scan_trans_lib.tagline": "异步扫描模组Jar、CFPA社区人工汉化、AI翻译本地缓存、模组家族术语库。",
+  "key.categories.mod_scan_trans_lib": "模组扫描翻译支持库",
+  "key.mod_scan_trans_lib.open_config": "打开设置界面",
+  "mod_scan_trans_lib.config.title": "模组扫描翻译支持库 - 设置",
+  "mod_scan_trans_lib.config.enabled": "模组主开关",
+  "mod_scan_trans_lib.config.cfpa": "CFPA 联网汉化",
+  "mod_scan_trans_lib.config.ai": "AI 翻译",
+  "mod_scan_trans_lib.config.family": "家族术语参考",
+  "mod_scan_trans_lib.config.async": "异步扫描",
+  "mod_scan_trans_lib.config.clearcache": "启动时清理缓存",
+  "mod_scan_trans_lib.config.language": "目标语言",
+  "mod_scan_trans_lib.config.save_reload": "保存并重载翻译",
+  "mod_scan_trans_lib.config.clear_ai_cache": "清理 AI 缓存",
+  "mod_scan_trans_lib.config.cancel": "取消",
+  "mod_scan_trans_lib.config.reloading": "正在重载翻译..."
 }
